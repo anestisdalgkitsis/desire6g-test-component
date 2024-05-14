@@ -1,0 +1,26 @@
+# Use an official Python runtime as a parent image
+FROM python:3.8
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy only the necessary files for the processor module
+COPY processor.py /app
+COPY ProcessingSystems /app/ProcessingSystems
+
+# Install any needed packages specified in requirements.txt
+COPY requirements.txt /app
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+# Define environment variables
+ENV MESSAGING_SYSTEM=rabbitmq \
+    KAFKA_BOOTSTRAP_SERVERS=kafka-service:9092 \
+    RABBITMQ_HOST=rabbitmq-service \
+    INPUT_TOPIC=input_topic \
+    OUTPUT_TOPIC=output_topic
+
+# Run the processor.py script when the container launches
+CMD ["python", "processor.py"]
