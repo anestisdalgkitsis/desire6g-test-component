@@ -6,6 +6,7 @@ import yaml
 import logging
 from aio_pika import connect, IncomingMessage, ExchangeType, Message
 from .config import rabbitmq_host, input_topic, output_topic
+import base64
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -22,7 +23,8 @@ async def process_message(message: IncomingMessage, message_counter):
         logger.info("Received and processing YAML data:")
         logger.info(parsed_yaml)
 
-        modified_message = f"Processed: {message.body.decode()}"
+        #modified_message = f"Processed: {base64.b64decode(message.body).decode()}"
+        modified_message = message.body
 
         logger.info(f"Message {message_counter} processing complete.")
         
@@ -57,7 +59,7 @@ async def consume_messages():
             modified_message = await process_message(message, message_counter)
             if modified_message:
                 await default_exchange.publish(
-                    Message(modified_message.encode()),
+                    Message(modified_message),
                     routing_key=output_topic  # Provide the routing_key here
                 )
                 logger.info(f"Processed message {message_counter}: {message.body.decode()}")
