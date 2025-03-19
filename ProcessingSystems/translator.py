@@ -11,18 +11,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def request2graph(service):
-    """
-    Constructs an undirected networkx graph based on the "forwarding_graphs" section
-    of the service. The nodes of the graph are taken from the "network-functions" and 
-    "application-functions" sections. All other information is stored in the 
-    "decorations" dictionary which is returned alongside the graph.
-    
-    Parameters:
-        service (dict): The input service dictionary.
-        
-    Returns:
-        tuple: A tuple containing the constructed networkx.Graph and a dictionary of decorations.
-    """
     try:
         # If the service is a bytes object, decode it to a string and then parse as JSON.
         if isinstance(service, bytes):
@@ -88,20 +76,7 @@ def request2graph(service):
         return None, None
     
 def graph2request(graph, data={}):
-    """
-    Constructs a service request dictionary adhering to the local_nsd_v2.yml schema 
-    from a networkx graph and additional data (decorations).
-
-    Parameters:
-        graph (networkx.Graph): The graph representing network and application functions.
-        data (dict): Additional service decorations and configuration parameters.
-
-    Returns:
-        dict: A dictionary conforming to the local_nsd_v2.yml structure describing a network service.
-    """
     try:
-        # Initialize the service with provided data under the "local-nsd" key.
-        # If data is already structured with "local-nsd", we use it directly.
         if "local-nsd" in data:
             service = data.copy()
         else:

@@ -55,21 +55,3 @@ def fetchTopology():
     time.sleep(1.8) # Slow down the process for demo purposes
 
     return G, sites
-
-# def fetchTopology_client():
-
-#     # Create a single site  topology
-#     G = nx.Graph()
-#     G.add_node("client_domain", cpu=4)
-#     time.sleep(1)
-
-#     return G, 1
-
-# def fetchTopology_provisional():
-
-#     # Create a single site  topology
-#     G = nx.Graph()
-#     G.add_node("provisional_domain", cpu=64)
-#     time.sleep(1)
-
-#     return G, 1

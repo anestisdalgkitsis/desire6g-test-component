@@ -84,7 +84,7 @@ def optimization_engine(data):
         logger.info("Service partitioning has failed, not enough resources to allocate.")
         # Then return the error
         return "Service partitioning has failed, not enough resources to allocate."
-        # return -1
+        return -1
     else:
         logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
 
