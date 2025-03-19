@@ -4,8 +4,7 @@ import logging
 import asyncio
 from aio_pika import IncomingMessage
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
 
 def process_message(message: IncomingMessage):
     try:
@@ -15,6 +14,7 @@ def process_message(message: IncomingMessage):
         logger.info(parsed_yaml)
 
         modified_message = f"Processed: {message.body.decode()}"
+        logger.info(modified_message)
 
         logger.info("Message processing complete.")
         return modified_message

@@ -1,4 +1,4 @@
-# msrv-prcr: Message Processor Application
+# msrv-prcr: Message Processor Application (adapted)
 
 ## Description
 msrv-prcr is a message processing application designed to handle messages from various messaging systems such as RabbitMQ and Kafka. It provides functionalities to consume messages from input queues or topics, process them, and forward the processed messages to output queues or topics.
@@ -7,13 +7,25 @@ msrv-prcr is a message processing application designed to handle messages from v
 This Dockerfile sets up a container for running the msrv-prcr service in a Docker environment.
 
 ## Usage
+0. Setup test env:
+    ```
+    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+    
+    source venv/bin/activate
+    export INPUT_TOPIC="myinput"
+    python3 publish.py
+
+    source venv/bin/activate
+    export OUTPUT_TOPIC="myoutput"
+    python3 subscribe.py
+    ```
 1. Build the Docker image:
     ```
-    docker build -t msrv-prcr .
+    sudo docker build -f Dockerfile.msrv-prcr -t msrv-prcr .
     ```
 2. Run the Docker container:
     ```
-    docker run -it --rm --link rabbitmq-service:rabbitmq-service -e RABBITMQ_HOST=rabbitmq-service -e OUTPUT_TOPIC=final_topic msrv-prcr
+    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput msrv-prcr
     ```
 3. Monitor the logs for processing information and errors.
 

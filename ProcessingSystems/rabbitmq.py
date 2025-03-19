@@ -8,6 +8,9 @@ from aio_pika import connect, IncomingMessage, ExchangeType, Message
 from .config import rabbitmq_host, input_topic, output_topic
 import base64
 
+# Functionality
+import ProcessingSystems.optimization_engine as optimization_engine
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,19 +21,30 @@ def clear_screen():
 async def process_message(message: IncomingMessage, message_counter):
     try:
         parsed_yaml = yaml.safe_load(message.body)
-        clear_screen()
-        logger.info(f"Processing message {message_counter}...")
-        logger.info("Received and processing YAML data:")
-        logger.info(parsed_yaml)
+        # clear_screen()
+        # logger.info(f"Processing message {message_counter}...")
+        logger.info("Received service optimization request number:" + str(message_counter) + ", with ns-instance-id:" + parsed_yaml["local-nsd"]["info"]["ns-instance-id"])
+        # logger.info(parsed_yaml)
 
         #modified_message = f"Processed: {base64.b64decode(message.body).decode()}"
-        modified_message = message.body
+        # modified_message = message.body
 
-        logger.info(f"Message {message_counter} processing complete.")
+        # logger.info(f"Message {message_counter} processing complete.")
+
+        # ----- Service Request -----
+
+        modified_message = optimization_engine.optimization_engine(message.body)
+        if modified_message == -1:
+            logger.error(f"Optimization Engine returned an error. Error during optimization pipeline.")
+            # return yaml.dumps({"Error": "Error during optimization pipeline"})
+            # modified_message = message.body
+        
+        # ----- Optimized Service Request -----
         
         # Manually acknowledge the message
         await message.ack()
 
+        logger.info("Optimized request ready for dispatch.")
         return modified_message
     except Exception as e:
         logger.error(f"Error processing message: {str(e)}")
@@ -62,7 +76,7 @@ async def consume_messages():
                     Message(modified_message),
                     routing_key=output_topic  # Provide the routing_key here
                 )
-                logger.info(f"Processed message {message_counter}: {message.body.decode()}")
+                # logger.info(f"Processed message {message_counter}: {message.body.decode()}")
 
         await input_queue.consume(on_message)
         logger.info("Waiting for messages to process. To exit, press CTRL+C")
