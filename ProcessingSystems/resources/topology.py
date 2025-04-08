@@ -8,22 +8,30 @@ site_connections = {
         {
             "site-connection-id": "sc1-sc2",
             "site-id-ref": "d6g-002",
-            "site-available-vcpu": "2", # Added for OE
-            "site-available-ram": "1", # Added for OE
+            "site-available-vcpu": "2",
+            "site-available-ram": "1",
             "tunnel-id": "444",
         },
+        # {
+        #     "site-connection-id": "sc1-sc3",
+        #     "site-id-ref": "d6g-003",
+        #     "site-available-vcpu": "8",
+        #     "site-available-ram": "48",
+        #     "tunnel-id": "321",
+        # },
         {
             "site-connection-id": "sc1-sc3",
-            "site-id-ref": "d6g-003",
-            "site-available-vcpu": "8", # Added for OE
-            "site-available-ram": "48", # Added for OE
+            "site-id-ref": "d6g-003-adam",
+            "site-available-vcpu": "32",
+            "site-available-ram": "128",
+            "site-available-storage": "3072",
             "tunnel-id": "321",
         },
         {
             "site-connection-id": "sc1-sc4",
             "site-id-ref": "d6g-004",
-            "site-available-vcpu": "1", # Added for OE
-            "site-available-ram": "16", # Added for OE
+            "site-available-vcpu": "1",
+            "site-available-ram": "16",
             "tunnel-id": "123",
         },
     ]
@@ -31,7 +39,7 @@ site_connections = {
 
 def fetchTopology():
 
-    # Create an empty graph
+    # Create topology graph
     G = nx.Graph()
 
     sites = 0
@@ -52,6 +60,6 @@ def fetchTopology():
         # Add site
         sites += 1
 
-    time.sleep(1.8) # Slow down the process for demo purposes
+    # time.sleep(1.8) # Slow down the process for demo purposes
 
     return G, sites

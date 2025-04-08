@@ -78,7 +78,8 @@ def optimization_engine(data):
         return -1
     
     # Check if partitioning was successfull
-    if subgraphs == None:
+    # if subgraphs == None:
+    if subgraphs is None or subgraphs == []:
         logger.info("Error: Unknown partitioning error.")
     elif subgraphs == -1:
         logger.info("Service partitioning has failed, not enough resources to allocate.")
@@ -93,7 +94,7 @@ def optimization_engine(data):
     for subgraph in subgraphs:
         encoded_subgraph = translator.graph2request(subgraph, data)
         if encoded_subgraph is None:
-            logger.info("Error: Failed to encode subgraph, check syntax.")
+            logger.info("Error: Failed to encode subgraph, check syntax: " + str(subgraph))
             return -1
         else:
             encoded_subgraphs.append(encoded_subgraph)

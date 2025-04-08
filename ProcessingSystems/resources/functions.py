@@ -55,6 +55,6 @@ def fetchFunctions(data):
         **application_functions
     }
 
-    time.sleep(1.2) # Slow down the process for demo purposes
+    # time.sleep(1.2) # Slow down the process for demo purposes
 
     return merged_functions
