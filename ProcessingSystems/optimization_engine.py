@@ -1,4 +1,5 @@
 # Python Modules
+import json
 import logging
 
 # Local Modules
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Model Pool Demo Configuration
 algorithms = {
-    "partition.py (Default)": {"enabled": True},
+    "partition.py (Default)": {"enabled": False},
     "autologic.py": {"enabled": True},
     "greedysplit.py": {"enabled": True},
 }
@@ -39,7 +40,8 @@ def optimization_engine(data):
     function_info = functions.fetchFunctions(data)
     if function_info is None:
         logger.info("Error: Failed to fetch function information, check configuration.")
-        return -1
+        error_payload = {"Error": "Failed to fetch function information, check configuration."}
+        return json.dumps(error_payload).encode('utf-8')
     else:
         logger.info("Function information fetched successfully from the Service Catalog module.")
 
@@ -48,16 +50,18 @@ def optimization_engine(data):
     topologyGraph, domains = topology.fetchTopology()
     if topologyGraph is None:
         logger.info("Error: Failed to fetch topology, check configuration.")
-        return -1
+        error_payload = {"Error": "Failed to fetch topology, check configuration."}
+        return json.dumps(error_payload).encode('utf-8')
     else:
         logger.info("Topology fetched successfully from Topology module.")
 
     # Translate to internal structure
     logger.info("Translating service request to internal graph...")
-    serviceGraph, decorations = translator.request2graph(data)
+    serviceGraph, decorations = translator.request2graph(data, function_info)
     if serviceGraph is None:
         logger.info("Error: Failed to translate service request, check syntax.")
-        return -1
+        error_payload = {"Error": "Failed to translate service request, check syntax."}
+        return json.dumps(error_payload).encode('utf-8')
     else:
         logger.info("Service request decoded successfully.")
 
@@ -67,15 +71,21 @@ def optimization_engine(data):
 
     # Route to selected Model from Model Pool
     subgraphs = []
-    if pick == "partition.py (Default)":
-        subgraphs = partition.partition(serviceGraph, topologyGraph, domains)
-    elif pick == "autologic.py":
-        subgraphs = autologic.autologic(serviceGraph, topologyGraph, domains)
-    elif pick == "greedysplit.py":
-        subgraphs = greedysplit.greedysplit(serviceGraph, topologyGraph, domains)
-    else:
-        logger.info("Error: Unknown model selected, check Model Pool configuration.")
-        return -1
+    try:
+        if pick == "partition.py (Default)":
+            subgraphs = partition.partition(serviceGraph, topologyGraph, domains)
+        elif pick == "autologic.py":
+            subgraphs = autologic.autologic(serviceGraph, topologyGraph, domains)
+        elif pick == "greedysplit.py":
+            subgraphs = greedysplit.greedysplit(serviceGraph, topologyGraph, domains)
+        else:
+            logger.info("Error: Unknown model selected, check Model Pool configuration.")
+            error_payload = "Error: Unknown model selected, check Model Pool configuration."
+            return json.dumps(error_payload).encode('utf-8')
+    except Exception as e:
+        logger.error("Internal error occurred in selected model: " + str(e))
+        error_payload = {"Error": "Internal error occurred in selected model: " + str(e)}
+        return json.dumps(error_payload).encode('utf-8')
     
     # Check if partitioning was successfull
     # if subgraphs == None:
@@ -84,10 +94,11 @@ def optimization_engine(data):
     elif subgraphs == -1:
         logger.info("Service partitioning has failed, not enough resources to allocate.")
         # Then return the error
-        return "Service partitioning has failed, not enough resources to allocate."
-        return -1
+        error_payload = {"Failed": "Service partitioning has failed, not enough resources to allocate."}
+        return json.dumps(error_payload).encode('utf-8')
     else:
-        logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
+        logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)))
+        # logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
 
     # Translate to YAML for SO
     encoded_subgraphs = []
@@ -95,7 +106,8 @@ def optimization_engine(data):
         encoded_subgraph = translator.graph2request(subgraph, data)
         if encoded_subgraph is None:
             logger.info("Error: Failed to encode subgraph, check syntax: " + str(subgraph))
-            return -1
+            error_payload = {"Error": "Failed to encode subgraph, check syntax: " + str(subgraph)}
+            return json.dumps(error_payload).encode('utf-8')
         else:
             encoded_subgraphs.append(encoded_subgraph)
             logger.info("Subgraph encoded successfully.")
@@ -109,4 +121,7 @@ def optimization_engine(data):
 
     # Return Partitioned Request
     logger.info("Returning optimized service request.")
+    logger.info("-----")
+    logger.info(combined_response)
+    logger.info("-----")
     return combined_response

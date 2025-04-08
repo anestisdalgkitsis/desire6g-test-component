@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def request2graph(service):
+def request2graph(service, functions):
     try:
         # If the service is a bytes object, decode it to a string and then parse as JSON.
         if isinstance(service, bytes):
@@ -25,12 +25,28 @@ def request2graph(service):
         # Extract nodes from network-functions and application-functions.
         network_functions = nsd.get("network-functions", [])
         application_functions = nsd.get("application-functions", [])
+
+        # Function info Lookups.
+        # additional_nf = {
+        #     nf.get("nf-instance-id"): nf 
+        #     for nf in functions.get("network-functions", []) if nf.get("nf-instance-id")
+        # }
+        # additional_af = {
+        #     af.get("af-instance-id"): af 
+        #     for af in functions.get("application-functions", []) if af.get("af-instance-id")
+        # }
         
         # Add network function nodes.
         for nf in network_functions:
             node_id = nf.get("nf-instance-id")
             if node_id:
+                # node_data = nf.copy()
+                # if node_id in additional_nf:
+                #     node_data = merge_missing(node_data, additional_nf[node_id])
+                # G.add_node(node_id, **node_data)
                 G.add_node(node_id, **nf)
+                logger.info("nf node added in graph:': %s", node_id)
+                # logger.info("nf node added in graph:': %s: %s", node_id, node_data)
             else:
                 logger.info("Network function missing 'nf-instance-id': %s", nf)
         
@@ -38,7 +54,13 @@ def request2graph(service):
         for af in application_functions:
             node_id = af.get("af-instance-id")
             if node_id:
+                # node_data = af.copy()
+                # if node_id in additional_af:
+                #     node_data = merge_missing(node_data, additional_af[node_id])
+                # G.add_node(node_id, **node_data)
                 G.add_node(node_id, **af)
+                logger.info("af node added in graph:': %s", node_id)
+                # logger.info("af node added in graph:': %s: %s", node_id, node_data)
             else:
                 logger.info("Application function missing 'af-instance-id': %s", af)
         
@@ -129,3 +151,11 @@ def graph2request(graph, data={}):
         logger.info("Error in graph2request: %s", e)
         return None
 
+#  Helper Function
+
+# Merge extra details into base dictionary only if keys are missing.
+def merge_missing(base, extra):
+    for key, value in extra.items():
+        if key not in base:
+            base[key] = value
+    return base
