@@ -99,6 +99,15 @@ def request2graph(service, functions):
     
 def graph2request(graph, data={}):
     try:
+        # If data is bytes, decode and convert it to a dictionary.
+        if isinstance(data, bytes):
+            try:
+                # Assuming the bytes object contains JSON data:
+                data = json.loads(data.decode("utf-8"))
+            except json.JSONDecodeError as json_err:
+                logger.info("Data provided is not valid JSON: %s", json_err)
+                return None
+
         if "local-nsd" in data:
             service = data.copy()
         else:
@@ -149,6 +158,7 @@ def graph2request(graph, data={}):
 
     except Exception as e:
         logger.info("Error in graph2request: %s", e)
+        logger.info("nsd error: %s", nsd)
         return None
 
 #  Helper Function

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Model Pool Demo Configuration
 algorithms = {
-    "partition.py (Default)": {"enabled": False},
+    "partition.py": {"enabled": False},
     "autologic.py": {"enabled": True},
     "greedysplit.py": {"enabled": True},
 }
@@ -97,8 +97,8 @@ def optimization_engine(data):
         error_payload = {"Failed": "Service partitioning has failed, not enough resources to allocate."}
         return json.dumps(error_payload).encode('utf-8')
     else:
-        logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)))
-        # logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
+        # logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)))
+        logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
 
     # Translate to YAML for SO
     encoded_subgraphs = []
@@ -113,15 +113,21 @@ def optimization_engine(data):
             logger.info("Subgraph encoded successfully.")
     logger.info("Combined subgraphs encoded successfully.")
 
-    # Combine Response
-    combined_response = []
-    for domain in domains:
-        combined_response.append({f"s{domain+1}e": encoded_subgraphs[domain],"site_id": f"SITEID{domain+1}"})
-    logger.info("Combined response ready.")
+    try:
+        # Combine Response
+        combined_response = []
+        for domain in range(0, domains-1):
+            combined_response.append({f"s{domain+1}e": encoded_subgraphs[domain], "site_id": f"SITEID{domain+1}"})
+        logger.info("Combined response ready.")
+    except Exception as e:
+        logger.exception("An error occurred while combining the response: %s", e)
+        error_payload = {"Error": "An error occurred while combining the response: " + str(e)}
+        return json.dumps(error_payload).encode('utf-8')
 
     # Return Partitioned Request
     logger.info("Returning optimized service request.")
-    logger.info("-----")
-    logger.info(combined_response)
-    logger.info("-----")
-    return combined_response
+    # logger.info("-----")
+    # logger.info(combined_response)
+    # logger.info("-----")
+    # return combined_response
+    return json.dumps(combined_response).encode('utf-8')
