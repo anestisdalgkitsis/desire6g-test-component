@@ -42,19 +42,21 @@ site_resources = {
         {
             "site-id-ref": "d6g-002",
             "site-available-vcpu": 2,
-            "site-available-ram": 1
-        },
-        {
-            "site-id-ref": "d6g-003-adam",
-            "site-available-vcpu": 32,
-            "site-available-ram": 128,
+            "site-available-ram": 1,
             "site-available-storage": 3072
-        },
-        {
-            "site-id-ref": "d6g-004",
-            "site-available-vcpu": 1,
-            "site-available-ram": 16
         }
+        # ,
+        # {
+        #     "site-id-ref": "d6g-003-adam",
+        #     "site-available-vcpu": 32,
+        #     "site-available-ram": 128,
+        #     "site-available-storage": 3072
+        # },
+        # {
+        #     "site-id-ref": "d6g-004",
+        #     "site-available-vcpu": 1,
+        #     "site-available-ram": 16
+        # }
     ]
 }
 
@@ -78,7 +80,10 @@ def fetchTopology():
         # Add edges (connections) between nodes
         G.add_edge("sc1", site_id, tunnel_id=connection["tunnel-id"])
 
-        # Add site
+        # # Add site
+        # sites += 1
+
+    for domain in site_resources["site-resources"]:
         sites += 1
 
     # time.sleep(1.8) # Slow down the process for demo purposes

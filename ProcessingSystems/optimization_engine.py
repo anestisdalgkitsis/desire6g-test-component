@@ -48,6 +48,7 @@ def optimization_engine(data):
     # Fetch topology (Simulate call to Topology)
     logger.info("Fetching topology from Topology module...")
     topologyGraph, domains, site_resources = topology.fetchTopology()
+    logger.info("Domains" + str(domains))
     if topologyGraph is None:
         logger.info("Error: Failed to fetch topology, check configuration.")
         error_payload = {"Error": "Failed to fetch topology, check configuration."}
@@ -71,8 +72,12 @@ def optimization_engine(data):
         logger.info("Ok: There are enough resources to host the service in the current region.")
     else:
         logger.info("Failed: The local region does not have enough resources to host the service.")
-        error_payload = {"Failed": "The local region does not have enough resources to host the service."}
+        error_payload = {"Failed": "The local region does not have enough resources to host the service. Relaying service request to the next region."}
         return json.dumps(error_payload).encode('utf-8')
+    
+    # Check if only one site, then relay the request to the site
+    if domains == 1:
+        return json.dumps(data).encode('utf-8')
 
     # Route to enabled autoselector (Randomized Demo) from Selector Pool
     pick = random_selection.spinwheel(algorithms)
@@ -97,7 +102,6 @@ def optimization_engine(data):
         return json.dumps(error_payload).encode('utf-8')
     
     # Check if partitioning was successfull
-    # if subgraphs == None:
     if subgraphs is None or subgraphs == []:
         logger.info("Error: Unknown partitioning error.")
     elif subgraphs == -1:
@@ -106,7 +110,6 @@ def optimization_engine(data):
         error_payload = {"Failed": "Service partitioning has failed, not enough resources to allocate."}
         return json.dumps(error_payload).encode('utf-8')
     else:
-        # logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)))
         logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
 
     # Translate to YAML for SO
@@ -142,7 +145,7 @@ def optimization_engine(data):
     return json.dumps(combined_response).encode('utf-8')
 
 def check_resources(merged_functions, site_resources):
-    
+
     # Calculate total required resources from all functions.
     total_required_vcpu = 0
     total_required_ram = 0
