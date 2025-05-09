@@ -16,6 +16,7 @@ import ProcessingSystems.model_pool.greedysplit as greedysplit
 # Demo Data
 import ProcessingSystems.resources.topology as topology
 import ProcessingSystems.resources.functions as functions
+import ProcessingSystems.resources.monitoring as monitoring
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ selectors = {
     "intelligence.py": {"enabled": False},
 }
 
-def optimization_engine(data):
+def optimization_engine(data, d6g_site):
 
     # Fetch VNF data (Simulate call to Service Catalog)
     logger.info("Fetching functions information from the Service Catalog module...")
@@ -47,7 +48,7 @@ def optimization_engine(data):
 
     # Fetch topology (Simulate call to Topology)
     logger.info("Fetching topology from Topology module...")
-    topologyGraph, domains, site_resources = topology.fetchTopology()
+    topologyGraph, domains, site_resources = topology.fetchTopology(d6g_site)
     logger.info("Domains" + str(domains))
     if topologyGraph is None:
         logger.info("Error: Failed to fetch topology, check configuration.")
@@ -56,7 +57,12 @@ def optimization_engine(data):
     else:
         logger.info("Topology fetched successfully from Topology module.")
 
-    # Translate to internal structure
+    # Fetch topology resources from monitoring (Simulate fetch from Infrastructure)
+    logger.info("Fetching topology resources from monitoring module...")
+    topology_resources = monitoring.fetchTopologyResources(d6g_site)
+    logger.info("Topology resources fetched successfully from monitoring module.")
+
+    # Translate NSD to internal structure
     logger.info("Translating service request to internal graph...")
     serviceGraph, decorations = translator.request2graph(data, function_info)
     if serviceGraph is None:
@@ -66,20 +72,20 @@ def optimization_engine(data):
     else:
         logger.info("Service request decoded successfully.")
 
-    # Check for resource availability
+    # Check for local D6G site resource availability
     logger.info("Checking resource availability...")
-    if check_resources(function_info, site_resources):
+    if monitoring.check_resources(function_info, site_resources):
         logger.info("Ok: There are enough resources to host the service in the current region.")
     else:
         logger.info("Failed: The local region does not have enough resources to host the service.")
         error_payload = {"Failed": "The local region does not have enough resources to host the service. Relaying service request to the next region."}
         return json.dumps(error_payload).encode('utf-8')
     
-    # Check if only one site, then relay the request to the site
+    # Check if only one D6G node in site, if yes forward the request to back to the local SO
     if domains == 1:
         return json.dumps(data).encode('utf-8')
 
-    # Route to enabled autoselector (Randomized Demo) from Selector Pool
+    # Route to enabled autoselector from Selector Pool
     pick = random_selection.spinwheel(algorithms)
     logger.info("Model Selector: " + str(pick))
 
@@ -101,7 +107,7 @@ def optimization_engine(data):
         error_payload = {"Error": "Internal error occurred in selected model: " + str(e)}
         return json.dumps(error_payload).encode('utf-8')
     
-    # Check if partitioning was successfull
+    # Verify if partitioning was successfull
     if subgraphs is None or subgraphs == []:
         logger.info("Error: Unknown partitioning error.")
     elif subgraphs == -1:
@@ -112,7 +118,7 @@ def optimization_engine(data):
     else:
         logger.info("Partitioning executed successfully. Count: " + str(len(subgraphs)) + " subgraphs: " + str(subgraphs))
 
-    # Translate to YAML for SO
+    # Translate internal structure to YAML for SO
     encoded_subgraphs = []
     for subgraph in subgraphs:
         encoded_subgraph = translator.graph2request(subgraph, data)
@@ -143,52 +149,3 @@ def optimization_engine(data):
     # logger.info("-----")
     # return combined_response
     return json.dumps(combined_response).encode('utf-8')
-
-def check_resources(merged_functions, site_resources):
-
-    # Calculate total required resources from all functions.
-    total_required_vcpu = 0
-    total_required_ram = 0
-    total_required_storage = 0
-
-    for key, func_list in merged_functions.items():
-        if not isinstance(func_list, list):
-            logger.info("Warning: Expected %s to be a list, got %s. Skipping.", key, type(func_list))
-            continue
-        for func in func_list:
-            if not isinstance(func, dict):
-                logger.info("Warning: Expected function info to be dict, got %s. Skipping: %s", type(func), func)
-                continue
-            total_required_vcpu += int(func.get("nf-vcpu", 0))
-            total_required_ram += int(func.get("nf-memory", 0))
-            total_required_storage += int(func.get("nf-storage", 0))
-
-    # Calculate total available resources from site resources.
-    total_available_vcpu = 0
-    total_available_ram = 0
-    total_available_storage = 0
-
-    site_resources_list = site_resources.get("site-resources", [])
-    for site in site_resources_list:
-        if not isinstance(site, dict):
-            # Log error and skip if the item is not a dictionary.
-            logger.error("Expected site to be a dictionary but got %s: %s", type(site), site)
-            continue
-        total_available_vcpu += int(site.get("site-available-vcpu", 0))
-        total_available_ram += int(site.get("site-available-ram", 0))
-        total_available_storage += int(site.get("site-available-storage", 0))
-
-    logger.info("Total required vCPU: %s", total_required_vcpu)
-    logger.info("Total available vCPU: %s", total_available_vcpu)
-    logger.info("Total required RAM: %s", total_required_ram)
-    logger.info("Total available RAM: %s", total_available_ram)
-    logger.info("Total required Storage: %s", total_required_storage)
-    logger.info("Total available Storage: %s", total_available_storage)
-
-    # Check if available resources cover the required resources.
-    if (total_required_vcpu <= total_available_vcpu and
-        total_required_ram <= total_available_ram and
-        total_required_storage <= total_available_storage):
-        return True
-    else:
-        return False

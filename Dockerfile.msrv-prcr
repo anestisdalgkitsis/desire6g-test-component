@@ -19,7 +19,8 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 ENV MESSAGING_SYSTEM=rabbitmq \
     RABBITMQ_HOST=rabbitmq \
     INPUT_TOPIC=input_topic \
-    OUTPUT_TOPIC=output_topic
+    OUTPUT_TOPIC=output_topic \
+    SITE=site
 
 # Run the processor.py script when the container launches
 CMD ["python", "processor.py"]

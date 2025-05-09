@@ -9,3 +9,6 @@ output_topic = os.getenv("OUTPUT_TOPIC", "output_topic")
 
 # Kafka connection parameters
 kafka_bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
+# Site parameters
+d6g_site = os.getenv("SITE", "site")

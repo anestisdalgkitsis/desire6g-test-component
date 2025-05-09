@@ -25,7 +25,7 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
     ```
 2. Run the Docker container:
     ```
-    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput msrv-prcr
+    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=site1 msrv-prcr
     ```
 3. Monitor the logs for processing information and errors.
 

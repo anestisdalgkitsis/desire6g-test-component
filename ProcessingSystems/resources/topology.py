@@ -1,7 +1,10 @@
 # Mock Demo2 Topology for development
 import networkx as nx
+import logging
 import numpy
-import time
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 site_connections = {
     "site-connections": [
@@ -60,7 +63,9 @@ site_resources = {
     ]
 }
 
-def fetchTopology():
+def fetchTopology(d6g_site):
+
+    logger.info("Fetching topology for site: " + d6g_site)
 
     # Create topology graph
     G = nx.Graph()
