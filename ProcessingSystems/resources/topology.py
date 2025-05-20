@@ -1,5 +1,6 @@
 # Mock Demo2 Topology for development
 import networkx as nx
+import requests
 import logging
 import numpy
 
@@ -94,3 +95,19 @@ def fetchTopology(d6g_site):
     # time.sleep(1.8) # Slow down the process for demo purposes
 
     return G, sites, site_resources
+
+def fetch_d6g_site_info(d6g_site):
+
+    url = f"http://localhost:8000/nodes/{d6g_site}"
+    headers = {"Accept": "application/json"}
+
+    try:
+        resp = requests.get(url, headers=headers)
+        resp.raise_for_status()          # error on 
+        site_json = resp.json()          # parse JSON into dict
+        return site_json
+    except requests.RequestException as e:
+        logger.error(f"HTTP error fetching node from Topology Module'{d6g_site}': {e}")
+    except ValueError as e:
+        logger.error(f"Error parsing JSON from Topology Module for '{d6g_site}': {e}")
+    return None
