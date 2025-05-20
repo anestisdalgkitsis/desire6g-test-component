@@ -1,6 +1,8 @@
 # Mock Demo2 Service Catalog for development
 import time
 import logging
+import requests
+import yaml
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,6 +57,20 @@ def fetchFunctions(data):
         **application_functions
     }
 
-    # time.sleep(1.2) # Slow down the process for demo purposes
-
     return merged_functions
+
+def call_service_catalog(graph_name = "graph1"):
+    try:
+        response = requests.get("http://localhost:8000/retrieve/{graph_id}")
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        # Parse YAML response into dictionary
+        sc_graph = yaml.safe_load(response.text)
+        logger.error(f"sc_graph received from SC -> {sc_graph}")
+        return sc_graph
+    except requests.RequestException as e:
+        logger.error(f"Error making request to service catalog: {e}")
+        return None
+    except yaml.YAMLError as e:
+        logger.error(f"Error parsing YAML response: {e}")
+        return None

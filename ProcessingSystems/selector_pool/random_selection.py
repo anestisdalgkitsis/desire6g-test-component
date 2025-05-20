@@ -1,5 +1,5 @@
-# Randomized selection baseline
-# Dr. Anestis Dalgkitsis | v1.2
+# Randomized mock selection baseline for demo purposes
+# Anestis Dalgkitsis | v1.3
 
 # Modules
 import random
