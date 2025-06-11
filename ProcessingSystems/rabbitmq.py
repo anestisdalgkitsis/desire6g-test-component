@@ -23,7 +23,7 @@ async def process_message(message: IncomingMessage, message_counter):
         parsed_yaml = yaml.safe_load(message.body)
         # clear_screen()
         # logger.info(f"Processing message {message_counter}...")
-        logger.info("Received service optimization request number:" + str(message_counter) + ", with ns instance id:" + parsed_yaml["lnsd"]["ns"]["id"])
+        logger.info("Received service optimization request number:" + str(message_counter) + ", with ns instance id:" + parsed_yaml["local-nsd"]["info"]["ns"]["id"])
         # logger.info(parsed_yaml)
 
         #modified_message = f"Processed: {base64.b64decode(message.body).decode()}"

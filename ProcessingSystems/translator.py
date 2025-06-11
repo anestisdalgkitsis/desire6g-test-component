@@ -17,7 +17,7 @@ def request2graph(service, functions):
             service = json.loads(service.decode('utf-8'))
         
         # If the service is wrapped under a key (like "lnsd"), extract it.
-        nsd = service.get("lnsd", service)
+        nsd = service.get("local-nsd", service)
         
         # Create an empty undirected graph.
         G = nx.Graph()
@@ -108,13 +108,13 @@ def graph2request(graph, data={}):
                 logger.info("Data provided is not valid JSON: %s", json_err)
                 return None
 
-        if "lnsd" in data:
+        if "local-nsd" in data:
             service = data.copy()
         else:
-            service = {"lnsd": {}}
-            service["lnsd"].update(data)
+            service = {"local-nsd": {}}
+            service["local-nsd"].update(data)
 
-        nsd = service["lnsd"]
+        nsd = service["local-nsd"]
 
         # Initialize lists for network-functions and application-functions.
         nsd["network-functions"] = []

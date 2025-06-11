@@ -47,6 +47,10 @@ def optimization_engine(data, d6g_site):
         logger.info("Function information fetched successfully from the Service Catalog module.")
 
     # Fetch topology (Simulate call to Topology)
+    # TEST 
+    # info = topology.fetch_d6g_site_info(d6g_site)
+    # exit(-1)
+    # TEST 
     logger.info("Fetching topology from Topology module...")
     topologyGraph, domains, site_resources = topology.fetchTopology(d6g_site)
     logger.info("Domains" + str(domains))

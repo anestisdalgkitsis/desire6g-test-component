@@ -14,6 +14,9 @@ def monitor_performance():
 def monitor_availability():
     pass
 
+def fetchTopologyResources(d6g_site):
+    return True
+
 def check_resources(merged_functions, site_resources):
 
     # Calculate total required resources from all functions.
