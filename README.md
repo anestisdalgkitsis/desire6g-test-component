@@ -54,10 +54,26 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
    "mem": 32,
    "storage": 1024
    }'
+   curl -X 'POST' \
+   'http://localhost:8000/nodes/' \
+   -H 'accept: application/json' \
+   -H 'Content-Type: application/json' \
+   -d '{
+   "site_id": "SITEID2",
+   "cpu": 32,
+   "mem": 128,
+   "storage": 3072
+   }'
    ```
+
+   ```
+   curl -X 'GET' \
+  'http://localhost:8000/nodes/SITEID1' \
+  -H 'accept: application/json'
+  ```
 <!-- uvicorn topology_server:app --reload -->
 
-   Start SC + add demo functions from another window (4)
+   <!-- Start SC + add demo functions from another window (4)
 
    ```
    git clone https://github.com/nubispc/desire6g-service-catalog
@@ -66,8 +82,8 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
    source venv/bin/activate
    pip install -r requirements.txt
    uvicorn app:app --reload --host 0.0.0.0 --port 8001
-   curl -X POST -H "Content-Type: application/json" -d '{"name": "graph1", "data": {"nodes": ["A", "B", "C"], "edges": [["A", "B"], ["B", "C"]]}}' http://localhost:8000/store
-   ```
+   curl -X POST -H "Content-Type: application/json" -d '{"name": "graph1", "data": {"nodes": ["A", "B"], "edges": ["A", "B"]}}' http://localhost:8001/store
+   ``` -->
    <!-- uvicorn server:app --reload -->
 
 1. Build the OE Docker image from another window (5):

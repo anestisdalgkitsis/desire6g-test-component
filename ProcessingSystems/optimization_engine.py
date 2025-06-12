@@ -46,11 +46,7 @@ def optimization_engine(data, d6g_site):
     else:
         logger.info("Function information fetched successfully from the Service Catalog module.")
 
-    # Fetch topology (Simulate call to Topology)
-    # TEST 
-    # info = topology.fetch_d6g_site_info(d6g_site)
-    # exit(-1)
-    # TEST 
+    # Fetch topology from Topology Module
     logger.info("Fetching topology from Topology module...")
     topologyGraph, domains, site_resources = topology.fetchTopology(d6g_site)
     logger.info("Domains" + str(domains))
@@ -62,9 +58,9 @@ def optimization_engine(data, d6g_site):
         logger.info("Topology fetched successfully from Topology module.")
 
     # Fetch topology resources from monitoring (Simulate fetch from Infrastructure)
-    logger.info("Fetching topology resources from monitoring module...")
-    topology_resources = monitoring.fetchTopologyResources(d6g_site)
-    logger.info("Topology resources fetched successfully from monitoring module.")
+    # logger.info("Fetching topology resources from monitoring module...")
+    # topology_resources = monitoring.fetchTopologyResources(d6g_site)
+    # logger.info("Topology resources fetched successfully from monitoring module.")
 
     # Translate NSD to internal structure
     logger.info("Translating service request to internal graph...")
@@ -87,6 +83,10 @@ def optimization_engine(data, d6g_site):
     
     # Check if only one D6G node in site, if yes forward the request to back to the local SO
     if domains == 1:
+        logger.info("Success: There is only one D6G node in the site. Forwarding request to the local SO.")
+        # Decode bytes to string if data is in bytes format
+        if isinstance(data, bytes):
+            data = data.decode('utf-8')
         return json.dumps(data).encode('utf-8')
 
     # Route to enabled autoselector from Selector Pool

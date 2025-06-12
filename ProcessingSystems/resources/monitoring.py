@@ -1,23 +1,26 @@
 # Mock Infrastructure Monitoring for development
 import time
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def monitor_resources():
-    pass
-
-def monitor_performance():
-    pass
-
-def monitor_availability():
-    pass
-
-def fetchTopologyResources(d6g_site):
-    return True
-
 def check_resources(merged_functions, site_resources):
+    logger.info("Starting resource check with site_resources type: %s", type(site_resources))
+    logger.info("site_resources content: %s", site_resources)
+
+    # Handle both formats: single site dict or wrapped in site-resources
+    if isinstance(site_resources, dict):
+        if "site-resources" in site_resources:
+            # Original format: wrapped in site-resources
+            site_data = site_resources["site-resources"][0]
+        else:
+            # New format: single site dictionary
+            site_data = site_resources
+    else:
+        logger.error("site_resources is not a dictionary: %s", type(site_resources))
+        return False
 
     # Calculate total required resources from all functions.
     total_required_vcpu = 0
@@ -37,19 +40,39 @@ def check_resources(merged_functions, site_resources):
             total_required_storage += int(func.get("nf-storage", 0))
 
     # Calculate total available resources from site resources.
-    total_available_vcpu = 0
-    total_available_ram = 0
-    total_available_storage = 0
+    # total_available_vcpu = 0
+    # total_available_ram = 0
+    # total_available_storage = 0
 
-    site_resources_list = site_resources.get("site-resources", [])
-    for site in site_resources_list:
-        if not isinstance(site, dict):
-            # Log error and skip if the item is not a dictionary.
-            logger.error("Expected site to be a dictionary but got %s: %s", type(site), site)
-            continue
-        total_available_vcpu += int(site.get("site-available-vcpu", 0))
-        total_available_ram += int(site.get("site-available-ram", 0))
-        total_available_storage += int(site.get("site-available-storage", 0))
+    # site_resources_list = site_resources.get("site-resources", [])
+    # for site in site_resources_list:
+    #     if not isinstance(site, dict):
+    #         # Log error and skip if the item is not a dictionary.
+    #         logger.error("Expected site to be a dictionary but got %s: %s", type(site), site)
+    #         continue
+    #     total_available_vcpu += int(site.get("site-available-vcpu", 0))
+    #     total_available_ram += int(site.get("site-available-ram", 0))
+    #     total_available_storage += int(site.get("site-available-storage", 0))
+
+    try:
+        logger.info("Using site data: %s", site_data)
+        
+        # Validate required fields in site_data
+        required_fields = ["site-available-vcpu", "site-available-ram", "site-available-storage"]
+        for field in required_fields:
+            if field not in site_data:
+                logger.error("Required field '%s' not found in site data. Available fields: %s", field, list(site_data.keys()))
+                return False
+            if not isinstance(site_data[field], (int, float)):
+                logger.error("Field '%s' is not a number: %s", field, type(site_data[field]))
+                return False
+
+        total_available_vcpu = site_data["site-available-vcpu"]
+        total_available_ram = site_data["site-available-ram"]
+        total_available_storage = site_data["site-available-storage"]
+    except Exception as e:
+        logger.error("Error accessing site resources data: %s. Full site_resources: %s", str(e), site_resources)
+        return False
 
     logger.info("Total required vCPU: %s", total_required_vcpu)
     logger.info("Total available vCPU: %s", total_available_vcpu)
