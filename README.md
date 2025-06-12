@@ -106,17 +106,38 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
 
 4. Monitor the logs for processing information and errors from window (5).
 
+## DESIRE6G Live DEMO2 Behavior
+
+If the Optimization Engine is instantiated in SITEID1, according to the pre-determined demo workflow, the response to the SO topic should be an error stating lack of resources, as follows:
+
+```
+{'Failed': 'The local region does not have enough resources to host the service. Relaying service request to the next region.'}
+```
+
+If the Optimization Engine is instantiated in SITEID2, it should log success and forward the original service request, as there is only one internal domain node and there is no need for partitioning:
+
+```
+{"local-nsd": {"info": {"ns-instance-id": "1", "description": "Example ... }}}
+```
+
+## Live Behavior (non Desire6G Demo)
+
+If the Optimization Engine is instantiated in a site with more than one node and enough resources to host the service, a random partitioning algorithm from the model pool to perform a mock partitioning. The module will return a list with the partitioned subgraphs:
+
+```
+{"s0e": { ... } }{"s1e": { ... } } ...
+```
+
 ## Folder Structure
 
-<!-- - `processor.py`: Main script for the msrv-prcr service.
+- `processor.py`: Main script for the msrv-prcr service.
 - `ProcessingSystems/`: Contains modules for processing messages.
 - `requirements.txt`: Specifies the required Python packages.
 - `Dockerfile.msrv-prcr`: Dockerfile for building the Docker image.
-- `README.md`: This file. -->
+- `README.md`: This file.
 
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or features you'd like to add.
+## Maintenance
+The repository mainentance will end together with the DESIRE6G EU project.
 
 ## License
 
