@@ -68,8 +68,8 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
 
    ```
    curl -X 'GET' \
-  'http://localhost:8000/nodes/SITEID1' \
-  -H 'accept: application/json'
+   'http://localhost:8000/nodes/SITEID1' \
+   -H 'accept: application/json'
   ```
 <!-- uvicorn topology_server:app --reload -->
 
