@@ -35,7 +35,7 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
    python3 subscribe.py
    ```
 
-   Start Topology + add demo SITEID1 from another window (3)
+   Start Topology + add demo SITEID1 and SITEID2 from another window (3)
 
    ```
    git clone https://github.com/nubispc/desire6g-topology.git
@@ -64,6 +64,14 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
    "mem": 128,
    "storage": 3072
    }'
+   ```
+
+   (Optional) Check if the Topology API works:
+
+    ```
+   curl -X 'GET' \
+   'http://localhost:8000/nodes/SITEID1' \
+   -H 'accept: application/json'
    ```
 
 1. Build the OE Docker image from another window (5):
@@ -115,6 +123,12 @@ If the Optimization Engine is instantiated in a site with more than one node and
 - `requirements.txt`: Specifies the required Python packages.
 - `Dockerfile.msrv-prcr`: Dockerfile for building the Docker image.
 - `README.md`: This file.
+
+## Toubleshooting
+
+### Topology is not reachable.
+
+If the topology API is running at the host space, while the OE is running at the docker space, comment-out the call command from resources/topology.py and enable the one below.
 
 ## Maintenance
 The repository mainentance will end together with the DESIRE6G EU project.

@@ -109,13 +109,14 @@ def fetchTopology(d6g_site):
     return G, 1, site_data
 
 def fetch_d6g_site_info(d6g_site):
-    """
-    Get site information using requests to match the curl command behavior.
-    Returns a dictionary with cpu, mem, and storage values.
-    """
+
+    # Create topology graph
+    G = nx.Graph()
+
     try:
         # Use requests to make the same GET request as curl
         url = f'http://localhost:8000/nodes/{d6g_site}'
+        # url = f'http://host.docker.internal:8000/nodes/{d6g_site}'
         headers = {'accept': 'application/json'}
         
         response = requests.get(url, headers=headers)
@@ -125,21 +126,22 @@ def fetch_d6g_site_info(d6g_site):
         site_info = response.json()
         
         # Store the values in a dictionary
-        site_data = {
-            'cpu': site_info.get('cpu', 0),
-            'mem': site_info.get('mem', 0),
-            'storage': site_info.get('storage', 0)
-        }
+        site_data = { "site-resources": [{
+            "site-id-ref": d6g_site,
+            "site-available-vcpu": site_info.get('cpu', 0),
+            "site-available-ram": site_info.get('mem', 0),
+            "site-available-storage": site_info.get('storage', 0)
+        },]}
         
         logger.info(f"Successfully retrieved site info for {d6g_site}: {site_data}")
-        return site_data
+        return G, 1, site_data
         
     except requests.RequestException as e:
         logger.error(f"Error making request for site {d6g_site}: {e}")
-        return None
+        return None, None, None
     except json.JSONDecodeError as e:
         logger.error(f"Error parsing JSON response for site {d6g_site}: {e}")
-        return None
+        return None, None, None
     except Exception as e:
         logger.error(f"Unexpected error getting site info for {d6g_site}: {e}")
-        return None
+        return None, None, None
