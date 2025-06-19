@@ -87,15 +87,14 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
 
 ## Local Demo Testing Environment Instructions (Docker Desktop)
 
-0. Setup test env:
-   Start a RabbitMQ server:
+1. Start a RabbitMQ server:
 
    ```
    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
    ```
 
    Open a window (1) to send the request (simulate the SO and IBN functionality).
-   You will need the "demo_nsd.sg.yml" in this folder.
+   You will need the "demo_nsd.sg.yml" in this folder, edit the "publish.py" file to send it accordingly.
 
    ```
    source venv/bin/activate
@@ -110,7 +109,7 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
    python3 subscribe.py
    ```
 
-   Start Topology + add demo SITEID1 and SITEID2 from another window (3)
+2. Start Topology + add demo SITEID1 and SITEID2 from another window (3)
 
    ```
    git clone https://github.com/nubispc/desire6g-topology.git
@@ -149,7 +148,7 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
    -H 'accept: application/json'
    ```
 
-   Start Service Catalog + add Demo functions to be fetched
+3. Start Service Catalog + add Demo functions to be fetched
 
    ```
    git clone https://github.com/nubispc/desire6g-service-catalog
@@ -167,24 +166,24 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
    ```
    curl http://localhost:8003/retrieve/apps
    ```
-1. Build the OE Docker image from another window (5):
+4. Build the OE Docker image from another window (5):
 
    ```
    sudo docker build -f Dockerfile.msrv-prcr -t msrv-prcr .
    ```
-2. Run the Docker container:
+5. Run the Docker container:
    SITE, specify the site id that the OE is running on (as a String: e.g. SITEID1).
    The rest as msrv-prcr, check the other README.md
 
    ```
    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=host.docker.internal -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=host.docker.internal -e SERVICE_CATALOG_PORT=8003 msrv-prcr
    ```
-3. Send a service request from window (1)
+5. Send a service request from window (1)
 
    ```
    python3 publish.py
    ```
-4. Monitor the logs for processing information and errors from window (5).
+7. Monitor the logs for processing information and errors from window (5).
 
 ## Live Behavior (non Desire6G Demo)
 
