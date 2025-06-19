@@ -1,131 +1,32 @@
-# Mock Demo2 Topology for development
+# Topology Module connectivity
+
 import networkx as nx
 import requests
 import logging
 import numpy
 import subprocess
 import json
+import ProcessingSystems.config as config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-site_connections = {
-    "site-connections": [
-        {
-            "site-connection-id": "sc1-sc2",
-            "site-id-ref": "d6g-002",
-            "site-available-vcpu": 2,
-            "site-available-ram": 1,
-            "tunnel-id": "444"
-        },
-        # {
-        #     "site-connection-id": "sc1-sc3",
-        #     "site-id-ref": "d6g-003",
-        #     "site-available-vcpu": "8",
-        #     "site-available-ram": "48",
-        #     "tunnel-id": "321",
-        # },
-        {
-            "site-connection-id": "sc1-sc3",
-            "site-id-ref": "d6g-003-adam",
-            "site-available-vcpu": 32,
-            "site-available-ram": 128,
-            "site-available-storage": 3072,
-            "tunnel-id": "321"
-        },
-        {
-            "site-connection-id": "sc1-sc4",
-            "site-id-ref": "d6g-004",
-            "site-available-vcpu": 1,
-            "site-available-ram": 16,
-            "tunnel-id": "123"
-        }
-    ]
-}
-
-site_resources = {
-    "site-resources": [
-        {
-            "site-id-ref": "SITEID1",
-            "site-available-vcpu": 2,
-            "site-available-ram": 1,
-            "site-available-storage": 3072
-        }
-    ]
-}
-
-site_resources2 = {
-    "site-resources": [
-        {
-            "site-id-ref": "SITEID2",
-            "site-available-vcpu": 32,
-            "site-available-ram": 128,
-            "site-available-storage": 3072
-        },
-    ]
-}
-
-def fetchTopology(d6g_site):
-
-    logger.info("Fetching topology for site: " + d6g_site)
-
-    # Create topology graph
-    G = nx.Graph()
-
-    sites = 0
-
-    # Add nodes and edges from the site connections
-    for connection in site_connections["site-connections"]:
-        site_id = connection["site-id-ref"]
-        vcpu = int(connection["site-available-vcpu"])
-        ram = int(connection["site-available-ram"])
-        
-        # Add site nodes with attributes
-        if site_id not in G:
-            G.add_node(site_id, vcpu=vcpu, ram=ram)
-
-        # Add edges (connections) between nodes
-        G.add_edge("sc1", site_id, tunnel_id=connection["tunnel-id"])
-
-        # # Add site
-        # sites += 1
-
-    if d6g_site == "SITEID1":
-        site_data = site_resources["site-resources"][0]
-        cpu = site_data["site-available-vcpu"]
-        mem = site_data["site-available-ram"]
-        storage = site_data["site-available-storage"]
-    elif d6g_site == "SITEID2":
-        site_data = site_resources2["site-resources"][0]
-        cpu = site_data["site-available-vcpu"]
-        mem = site_data["site-available-ram"]
-        storage = site_data["site-available-storage"]
-    else:
-        logger.info("Error: Invalid site ID")
-        return None, None, None
-
-    # time.sleep(1.8) # Slow down the process for demo purposes
-
-    return G, 1, site_data
-
 def fetch_d6g_site_info(d6g_site):
 
-    # Create topology graph
+    # Create an empty topology graph to be populated
     G = nx.Graph()
 
     try:
-        # Use requests to make the same GET request as curl
-        url = f'http://localhost:8000/nodes/{d6g_site}'
-        # url = f'http://host.docker.internal:8000/nodes/{d6g_site}'
+        url = f'http://{config.TOPOLOGY_MODULE_HOST}:{config.TOPOLOGY_MODULE_PORT}/nodes/{d6g_site}'
         headers = {'accept': 'application/json'}
         
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an exception for bad status codes
         
-        # Parse the JSON response
+        # Parse the JSON response into dictionary
         site_info = response.json()
         
-        # Store the values in a dictionary
+        # Store the values in a dictionary for later processing
         site_data = { "site-resources": [{
             "site-id-ref": d6g_site,
             "site-available-vcpu": site_info.get('cpu', 0),

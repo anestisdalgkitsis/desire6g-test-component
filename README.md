@@ -1,16 +1,57 @@
-# msrv-prcr: Optimization Engine Desire6G Module
+# Optimization Engine Desire6G Module
 
-Based on Message Processor Application by NUBIS
+Based on Message Processor Application by NUBIS (msrv-prcr).
 
 ## Description
 
-msrv-prcr is a message processing application designed to handle messages from various messaging systems such as RabbitMQ and Kafka. It provides functionalities to consume messages from input queues or topics, process them, and forward the processed messages to output queues or topics.
+TODO
 
 ## Overview
 
-This Dockerfile sets up a container for running the msrv-prcr service in a Docker environment.
+TODO
 
-## Demo Environment
+## 5TONIC INTEGRATION STEPS (FOR NUBIS)
+
+These steps assume the following, update accordingly
+
+1. Add the two Desire6G Sites to the Topology Module (TM), assuming that the TM is available at localhost with port 8000:
+   ```bash
+   curl -X 'POST' \
+   'http://localhost:8000/nodes/' \
+   -H 'accept: application/json' \
+   -H 'Content-Type: application/json' \
+   -d '{
+   "site_id": "SITEID1",
+   "cpu": 8,
+   "mem": 32,
+   "storage": 1024
+   }'
+
+   curl -X 'POST' \
+   'http://localhost:8000/nodes/' \
+   -H 'accept: application/json' \
+   -H 'Content-Type: application/json' \
+   -d '{
+   "site_id": "SITEID2",
+   "cpu": 32,
+   "mem": 128,
+   "storage": 3072
+   }'
+   ```
+2. Add functions to the Service Catalog (SC), assuming that the SC is available at localhost with port 8003:
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -d '{"name": "apps","data": {"network-functions": [{"nf-instance-id": "flowcl-i01", "nf-vcpu": 8, "nf-memory": 16, "nf-storage": 100}, {"nf-instance-id": "firewall-i01", "nf-vcpu": 4, "nf-memory": 4, "nf-storage": 30}], "application-functions": [{"af-instance-id": "lws-i01", "nf-vcpu": 2, "nf-memory": 8, "nf-storage": 30}]}}' http://localhost:8003/store
+   ```
+3. Build the OE container
+   ```bash
+   sudo docker build -f Dockerfile.msrv-prcr -t msrv-prcr .
+   ```
+4. Instantiate the OE as follows:
+   ```bash
+   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TM=localhost:8000 -e SC=localhost:8003 msrv-prcr
+   ```
+
+## Local Demo Environment (Docker Desktop)
 
 0. Setup test env:
    Start a RabbitMQ server:
@@ -68,12 +109,30 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
 
    (Optional) Check if the Topology API works:
 
-    ```
+   ```
    curl -X 'GET' \
    'http://localhost:8000/nodes/SITEID1' \
    -H 'accept: application/json'
    ```
 
+   Start Service Catalog + add Demo functions to be fetched
+
+   ```
+   git clone https://github.com/nubispc/desire6g-service-catalog
+   cd desire6g-service-catalog
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install fastapi uvicorn
+   pip install -r requirements.txt
+   uvicorn app:app --reload --host 0.0.0.0 --port 8003
+   curl -X POST -H "Content-Type: application/json" -d '{"name": "apps","data": {"network-functions": [{"nf-instance-id": "flowcl-i01", "nf-vcpu": 8, "nf-memory": 16, "nf-storage": 100}, {"nf-instance-id": "firewall-i01", "nf-vcpu": 4, "nf-memory": 4, "nf-storage": 30}], "application-functions": [{"af-instance-id": "lws-i01", "nf-vcpu": 2, "nf-memory": 8, "nf-storage": 30}]}}' http://localhost:8003/store
+   ```
+
+   (Optional) Check if the SC API works:
+
+   ```
+   curl http://localhost:8003/retrieve/apps
+   ```
 1. Build the OE Docker image from another window (5):
 
    ```
@@ -86,12 +145,11 @@ This Dockerfile sets up a container for running the msrv-prcr service in a Docke
    ```
    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 msrv-prcr
    ```
-
 3. Send a service request from window (1)
+
    ```
    python3 publish.py
    ```
-
 4. Monitor the logs for processing information and errors from window (5).
 
 ## DESIRE6G Live DEMO2 Behavior
@@ -131,6 +189,7 @@ If the Optimization Engine is instantiated in a site with more than one node and
 If the topology API is running at the host space, while the OE is running at the docker space, comment-out the call command from resources/topology.py and enable the one below.
 
 ## Maintenance
+
 The repository mainentance will end together with the DESIRE6G EU project.
 
 ## License

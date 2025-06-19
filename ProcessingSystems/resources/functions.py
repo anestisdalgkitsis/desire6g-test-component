@@ -3,71 +3,24 @@ import time
 import logging
 import requests
 import yaml
+import json
+import ProcessingSystems.config as config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-network_functions = {
-    "network-functions": [
-        {
-            "nf-instance-id": "flowcl-i01",
-            "nf-instance-d6g-id": "101",
-            "nf-id": "flowcl",
-            "nf-name": "Flow Classifier",
-            "nf-version": "v1.0",
-            "nf-mgmt-network": "shared-mgmt-net",
-            "nf-vcpu": 8,
-            "nf-memory": 16,
-            "nf-storage": 100
-        },
-        {
-            "nf-instance-id": "firewall-i01",
-            "nf-instance-d6g-id": "102",
-            "nf-id": "firewall",
-            "nf-name": "ACL Firewall",
-            "nf-version": "v1.0",
-            "nf-mgmt-network": "shared-mgmt-net",
-            "nf-vcpu": 4,
-            "nf-memory": 4,
-            "nf-storage": 30
-        }
-    ]
-}
-
-application_functions = {
-    "application-functions": [
-        {
-            "af-instance-id": "lws-i01",
-            "af-instance-d6g-id": "103",
-            "af-id": "localwebserver",
-            "af-name": "Local web server for an example service",
-            "af-version": "1.0",
-            "af-mgmt-network": "shared-mgmt-net",
-            "nf-vcpu": 2,
-            "nf-memory": 8,
-            "nf-storage": 30
-        }
-    ]
-}
-
-def fetchFunctions(data): 
-
-    merged_functions = {
-        **network_functions,
-        **application_functions
-    }
-
-    return merged_functions
-
-def call_service_catalog(graph_name = "graph1"):
+def fetch_service_catalog_info(funtions_graph_name = "apps", data = None):
     try:
-        response = requests.get("http://localhost:8000/retrieve/{graph_id}")
-        response.raise_for_status()  # Raise an exception for bad status codes
+        url = f'http://{config.SERVICE_CATALOG_HOST}:{config.SERVICE_CATALOG_PORT}/retrieve/{funtions_graph_name}'
+        headers = {'accept': 'application/json'}
         
-        # Parse YAML response into dictionary
-        sc_graph = yaml.safe_load(response.text)
-        logger.error(f"sc_graph received from SC -> {sc_graph}")
-        return sc_graph
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
+
+        # Parse the JSON response into dictionary
+        functions_info = response.json()
+        logger.error(f"Received from SC -> {functions_info}")
+        return functions_info
     except requests.RequestException as e:
         logger.error(f"Error making request to service catalog: {e}")
         return None

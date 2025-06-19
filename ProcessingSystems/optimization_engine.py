@@ -1,3 +1,5 @@
+# Optimization Engine Module Core Flow
+
 # Python Modules
 import json
 import logging
@@ -15,8 +17,8 @@ import ProcessingSystems.model_pool.greedysplit as greedysplit
 
 # Demo Data
 import ProcessingSystems.resources.topology as topology
-import ProcessingSystems.resources.functions as functions
 import ProcessingSystems.resources.monitoring as monitoring
+import ProcessingSystems.resources.functions as functions
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,9 +38,9 @@ selectors = {
 
 def optimization_engine(data, d6g_site):
 
-    # Fetch VNF data (Simulate call to Service Catalog)
+    # Fetch VNF data from Service Catalog
     logger.info("Fetching functions information from the Service Catalog module...")
-    function_info = functions.fetchFunctions(data)
+    function_info = functions.fetch_service_catalog_info(funtions_graph_name = "apps", data = data)
     if function_info is None:
         logger.info("Error: Failed to fetch function information, check configuration.")
         error_payload = {"Error": "Failed to fetch function information, check configuration."}
@@ -48,7 +50,7 @@ def optimization_engine(data, d6g_site):
 
     # Fetch topology from Topology Module
     logger.info("Fetching topology from Topology module...")
-    topologyGraph, domains, site_resources = topology.fetchTopology(d6g_site)
+    topologyGraph, domains, site_resources = topology.fetch_d6g_site_info(d6g_site)
     logger.info("Domains" + str(domains))
     if topologyGraph is None:
         logger.info("Error: Failed to fetch topology, check configuration.")
@@ -57,7 +59,7 @@ def optimization_engine(data, d6g_site):
     else:
         logger.info("Topology fetched successfully from Topology module.")
 
-    # Fetch topology resources from monitoring (Simulate fetch from Infrastructure)
+    # Fetch topology resources from monitoring (Disabled for now)
     # logger.info("Fetching topology resources from monitoring module...")
     # topology_resources = monitoring.fetchTopologyResources(d6g_site)
     # logger.info("Topology resources fetched successfully from monitoring module.")
@@ -93,7 +95,7 @@ def optimization_engine(data, d6g_site):
     pick = random_selection.spinwheel(algorithms)
     logger.info("Model Selector: " + str(pick))
 
-    # Route to selected Model from Model Pool
+    # Route to selected Model from the Model Pool
     subgraphs = []
     try:
         if pick == "partition.py (Default)":
@@ -116,7 +118,6 @@ def optimization_engine(data, d6g_site):
         logger.info("Error: Unknown partitioning error.")
     elif subgraphs == -1:
         logger.info("Service partitioning has failed, not enough resources to allocate.")
-        # Then return the error
         error_payload = {"Failed": "Service partitioning has failed, not enough resources to allocate."}
         return json.dumps(error_payload).encode('utf-8')
     else:
@@ -135,8 +136,8 @@ def optimization_engine(data, d6g_site):
             logger.info("Subgraph encoded successfully.")
     logger.info("Combined subgraphs encoded successfully.")
 
+    # Combine Response
     try:
-        # Combine Response
         combined_response = []
         for domain in range(0, domains-1):
             combined_response.append({f"s{domain+1}e": encoded_subgraphs[domain], "site_id": f"SITEID{domain+1}"})
@@ -148,8 +149,4 @@ def optimization_engine(data, d6g_site):
 
     # Return Partitioned Request
     logger.info("Returning optimized service request.")
-    # logger.info("-----")
-    # logger.info(combined_response)
-    # logger.info("-----")
-    # return combined_response
     return json.dumps(combined_response).encode('utf-8')
