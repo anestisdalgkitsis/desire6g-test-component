@@ -85,7 +85,7 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
 {"local-nsd": {"info": {"ns-instance-id": "1", "description": "Example ... }}}
 ```
 
-## Local Demo Environment (Docker Desktop)
+## Local Demo Testing Environment Instructions (Docker Desktop)
 
 0. Setup test env:
    Start a RabbitMQ server:
@@ -194,13 +194,13 @@ If the Optimization Engine is instantiated in a site with more than one node and
 {"s0e": { ... } }{"s1e": { ... } } ...
 ```
 
-## Folder Structure
+<!-- ## Folder Structure
 
 - `processor.py`: Main script for the msrv-prcr service.
 - `ProcessingSystems/`: Contains modules for processing messages.
 - `requirements.txt`: Specifies the required Python packages.
 - `Dockerfile.msrv-prcr`: Dockerfile for building the Docker image.
-- `README.md`: This file.
+- `README.md`: This file. -->
 
 ## Toubleshooting
 
