@@ -48,8 +48,24 @@ These steps assume the following, update accordingly
    ```
 4. Instantiate the OE as follows:
    ```bash
-   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TM=localhost:8000 -e SC=localhost:8003 msrv-prcr
+   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=localhost -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=localhost -e SERVICE_CATALOG_PORT=8003 msrv-prcr
    ```
+5. Send the "demo_nsd.sg.yml" request from the SO to the OE
+   The expected responds are shown at the following section.
+
+## DESIRE6G Live DEMO2 Behavior
+
+If the Optimization Engine is instantiated in SITEID1, according to the pre-determined demo workflow, the response to the SO topic should be an error stating lack of resources, as follows:
+
+```
+{'Failed': 'The local region does not have enough resources to host the service. Relaying service request to the next region.'}
+```
+
+If the Optimization Engine is instantiated in SITEID2, it should log success and forward the original service request, as there is only one internal domain node and there is no need for partitioning:
+
+```
+{"local-nsd": {"info": {"ns-instance-id": "1", "description": "Example ... }}}
+```
 
 ## Local Demo Environment (Docker Desktop)
 
@@ -152,20 +168,6 @@ These steps assume the following, update accordingly
    ```
 4. Monitor the logs for processing information and errors from window (5).
 
-## DESIRE6G Live DEMO2 Behavior
-
-If the Optimization Engine is instantiated in SITEID1, according to the pre-determined demo workflow, the response to the SO topic should be an error stating lack of resources, as follows:
-
-```
-{'Failed': 'The local region does not have enough resources to host the service. Relaying service request to the next region.'}
-```
-
-If the Optimization Engine is instantiated in SITEID2, it should log success and forward the original service request, as there is only one internal domain node and there is no need for partitioning:
-
-```
-{"local-nsd": {"info": {"ns-instance-id": "1", "description": "Example ... }}}
-```
-
 ## Live Behavior (non Desire6G Demo)
 
 If the Optimization Engine is instantiated in a site with more than one node and enough resources to host the service, a random partitioning algorithm from the model pool to perform a mock partitioning. The module will return a list with the partitioned subgraphs:
@@ -184,9 +186,9 @@ If the Optimization Engine is instantiated in a site with more than one node and
 
 ## Toubleshooting
 
-### Topology is not reachable.
+### X module not reachable.
 
-If the topology API is running at the host space, while the OE is running at the docker space, comment-out the call command from resources/topology.py and enable the one below.
+Use host.docker.internal istead of local when the modules are instantiated locally, but the OE is running in a container.
 
 ## Maintenance
 

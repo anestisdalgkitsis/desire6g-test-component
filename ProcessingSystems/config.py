@@ -14,9 +14,9 @@ kafka_bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 d6g_site = os.getenv("SITE", "site")
 
 # Topology Module connection parameters
-TOPOLOGY_MODULE_HOST = os.getenv("TOPOLOGY_MODULE_HOST", "host.docker.internal")
+TOPOLOGY_MODULE_HOST = os.getenv("TOPOLOGY_MODULE_HOST", "localhost")
 TOPOLOGY_MODULE_PORT = os.getenv("TOPOLOGY_MODULE_PORT", "8000")
 
 # Service Catalog connection parameters
-SERVICE_CATALOG_HOST = os.getenv("SERVICE_CATALOG_HOST", "host.docker.internal")
+SERVICE_CATALOG_HOST = os.getenv("SERVICE_CATALOG_HOST", "localhost")
 SERVICE_CATALOG_PORT = os.getenv("SERVICE_CATALOG_PORT", "8003")
