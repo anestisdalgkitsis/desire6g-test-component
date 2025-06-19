@@ -53,6 +53,10 @@ These steps assume the following, update accordingly
 
 4. Instantiate the OE as follows, adjust the arguments accordingly:
 
+   ```bash
+   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=localhost -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=localhost -e SERVICE_CATALOG_PORT=8003 msrv-prcr
+   ```
+
    Arguments (pay attention to the SO RabbitMQ topics):
    - rabbitmq: link RabbitMQ Server 
    - RABBITMQ_HOST: RabbitMQ Host name
@@ -63,10 +67,7 @@ These steps assume the following, update accordingly
    - TOPOLOGY_MODULE_PORT: Port number for the Topology Module
    - SERVICE_CATALOG_HOST: Hostname for the Service Catalog
    - SERVICE_CATALOG_PORT: Port number for the Service Catalog
-
-   ```bash
-   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=localhost -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=localhost -e SERVICE_CATALOG_PORT=8003 msrv-prcr
-   ```
+   
 
 5. Send the "demo_nsd.sg.yml" request from the SO to the OE for optimization.
 
