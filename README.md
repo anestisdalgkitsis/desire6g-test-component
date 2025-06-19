@@ -2,19 +2,20 @@
 
 Based on Message Processor Application by NUBIS (msrv-prcr).
 
-## Description
+<!-- ## Description
 
 TODO
 
 ## Overview
 
-TODO
+TODO -->
 
 ## 5TONIC INTEGRATION STEPS (FOR NUBIS)
 
 These steps assume the following, update accordingly
 
 1. Add the two Desire6G Sites to the Topology Module (TM), assuming that the TM is available at localhost with port 8000:
+
    ```bash
    curl -X 'POST' \
    'http://localhost:8000/nodes/' \
@@ -38,22 +39,38 @@ These steps assume the following, update accordingly
    "storage": 3072
    }'
    ```
+
 2. Add functions to the Service Catalog (SC), assuming that the SC is available at localhost with port 8003:
+
    ```bash
    curl -X POST -H "Content-Type: application/json" -d '{"name": "apps","data": {"network-functions": [{"nf-instance-id": "flowcl-i01", "nf-vcpu": 8, "nf-memory": 16, "nf-storage": 100}, {"nf-instance-id": "firewall-i01", "nf-vcpu": 4, "nf-memory": 4, "nf-storage": 30}], "application-functions": [{"af-instance-id": "lws-i01", "nf-vcpu": 2, "nf-memory": 8, "nf-storage": 30}]}}' http://localhost:8003/store
    ```
-3. Build the OE container
+3. Build the OE container at the project root folder:
+
    ```bash
    sudo docker build -f Dockerfile.msrv-prcr -t msrv-prcr .
    ```
-4. Instantiate the OE as follows:
+
+4. Instantiate the OE as follows, adjust the arguments accordingly:
+
+   Arguments (pay attention to the SO RabbitMQ topics):
+   - rabbitmq: link RabbitMQ Server 
+   - RABBITMQ_HOST: RabbitMQ Host name
+   - OUTPUT_TOPIC: RabbitMQ Topic that SO will RECEIVE the optimized services.
+   - INPUT_TOPIC: RabbitMQ Topic that SO will SEND the service requests for optimization.
+   - SITE: D6G Site ID where the OE is located (can be SITEID1 or SITEID2, used to fetch topology)
+   - TOPOLOGY_MODULE_HOST: Hostname for the Topology Module
+   - TOPOLOGY_MODULE_PORT: Port number for the Topology Module
+   - SERVICE_CATALOG_HOST: Hostname for the Service Catalog
+   - SERVICE_CATALOG_PORT: Port number for the Service Catalog
+
    ```bash
    sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=localhost -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=localhost -e SERVICE_CATALOG_PORT=8003 msrv-prcr
    ```
-5. Send the "demo_nsd.sg.yml" request from the SO to the OE
-   The expected responds are shown at the following section.
 
-## DESIRE6G Live DEMO2 Behavior
+5. Send the "demo_nsd.sg.yml" request from the SO to the OE for optimization.
+
+## DESIRE6G Live DEMO2 Behavior (Expected outputs)
 
 If the Optimization Engine is instantiated in SITEID1, according to the pre-determined demo workflow, the response to the SO topic should be an error stating lack of resources, as follows:
 
@@ -159,7 +176,7 @@ If the Optimization Engine is instantiated in SITEID2, it should log success and
    The rest as msrv-prcr, check the other README.md
 
    ```
-   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 msrv-prcr
+   sudo docker run -it --rm --link rabbitmq:3-management -e RABBITMQ_HOST=3-management -e OUTPUT_TOPIC=myoutput -e INPUT_TOPIC=myinput -e SITE=SITEID1 -e TOPOLOGY_MODULE_HOST=host.docker.internal -e TOPOLOGY_MODULE_PORT=8000 -e SERVICE_CATALOG_HOST=host.docker.internal -e SERVICE_CATALOG_PORT=8003 msrv-prcr
    ```
 3. Send a service request from window (1)
 
